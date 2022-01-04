@@ -1,0 +1,5 @@
+name: LiveMC
+version: '0.1.0'
+main: net.teamuni.livemc.LiveMC
+api-version: 1.18
+authors: [ Kari ]
