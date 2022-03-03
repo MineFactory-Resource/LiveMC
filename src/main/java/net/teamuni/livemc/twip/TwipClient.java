@@ -2,8 +2,12 @@ package net.teamuni.livemc.twip;
 
 import io.socket.client.IO;
 import io.socket.client.Socket;
+import io.socket.thread.EventThread;
 import net.teamuni.livemc.LiveMC;
 import org.bukkit.Bukkit;
+import org.bukkit.plugin.IllegalPluginAccessException;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -15,7 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class TwipClient implements Closeable {
+public class TwipClient {
 
     private static final String URI_FORMAT = "https://io.mytwip.net?alertbox_key=%s&version=%s&token=%s";
     private static final String TWIP_URL = "https://twip.kr/widgets/alertbox/%s";
@@ -31,24 +35,36 @@ public class TwipClient implements Closeable {
         IO.Options options = new IO.Options();
         options.transports = new String[]{"websocket", "polling"};
         options.reconnection = true;
-
         this.socket = IO.socket(URI.create(String.format(URI_FORMAT, this.key, version, this.token)), options);
         this.socket
-                .on("new donate", args -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), LiveMC.getInstance().getDonationCommand()))
-                .on("new redemption", args -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), LiveMC.getInstance().getMarketRewardCommand()));
-
+                .on(Socket.EVENT_CONNECT, args -> Bukkit.getLogger().info("Twip에 연결되었습니다."))
+                .on("new donate", args -> runSyncCommand(LiveMC.getInstance().getDonationCommand()))
+                .on("new redemption", args -> runSyncCommand(LiveMC.getInstance().getMarketRewardCommand()));
         this.socket.connect();
+    }
+
+    private void runSyncCommand(String command) {
+        try {
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+                }
+            }.runTask(LiveMC.getInstance());
+        } catch (IllegalPluginAccessException ignored) {
+        }
     }
 
     private String readVersion(String key) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) new URL(String.format(TWIP_URL, key)).openConnection();
         connection.setRequestMethod("GET");
-        Pattern p = Pattern.compile("version: '(.*)'");
-        Matcher m = p.matcher(new String(connection.getInputStream().readAllBytes()));
-        if (m.find()) {
-            return m.group(1);
+        String html = new String(connection.getInputStream().readAllBytes());
+        Pattern pattern = Pattern.compile("version: '(.*)'");
+        Matcher matcher = pattern.matcher(html);
+        if (matcher.find()) {
+            return matcher.group(1);
         }
-        return "";
+        throw new IOException("version을 찾을 수 없습니다.");
     }
 
     public Socket getSocket() {
@@ -61,10 +77,5 @@ public class TwipClient implements Closeable {
 
     public String getToken() {
         return token;
-    }
-
-    @Override
-    public void close() {
-        this.socket.close();
     }
 }
