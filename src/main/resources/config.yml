@@ -1,2 +1,5 @@
-token: d3mt6nadj6dybt82c2f41c5jaky462
-command: "/broadcast 비트 후원 감사합니다!" #Minecraft Command
+Twip:
+  key: Alert Box key
+  token: token #https://twip.kr/dashboard/security
+  Donation: "giveall 5"
+  MarketReward: ""
