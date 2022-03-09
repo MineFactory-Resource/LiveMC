@@ -1,4 +1,4 @@
-#LiveMC
+# LiveMC
 ## 개발 환경
 [Paper-1.18.1-109](https://papermc.io/downloads#Paper-1.18)
 
