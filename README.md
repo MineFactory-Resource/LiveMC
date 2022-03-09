@@ -21,7 +21,7 @@ Twip:
   Donation: "say Thanks for donation !"
   MarketReward: "say Thanks for using the market !"
 ```
-Twip의 key와 token을 발급받는 방법은 [이곳](#twip-api-tokenkey---)을 참조해주세요.  
+Twip의 key와 token을 발급받는 방법은 [이곳](#twip-api-tokenkey-발급-받는-방법)을 참조해주세요.  
 Donation은 Twip에서 후원이 발생되었을때 실행되는 명령어 입니다.  
 MarketReward는 Twip에 보상을 포인트로 구매하였을때 실행되는 명령어 입니다.
 
